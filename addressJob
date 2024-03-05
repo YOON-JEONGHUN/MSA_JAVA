@@ -1,0 +1,47 @@
+@Bean(name="address01Job")
+public Job addressJob() throws Exception{
+RequestScopUtil.getAttribute().setUserId("12345");
+RequestScopUtil.getAttribute().setPgmId(msa_java_AddressJob");
+
+return jobBuilderFactory.get("addressJob")
+.start(addressJobStep01(null))
+.next(addressJobStep02())
+.bulild();
+}
+
+@Bean
+@JobScope
+public Step addressJobStep01(@Value("#{jobParameters[workDate]}") String workDate) throws Exception {
+
+return stepBuilderFactory.get(addressJobStep01)
+.tasklet((cibtribution, chunkContext)-> {
+String workYyMm = workDate;
+
+if(StringUtils.isEmpty(workDate)) {
+workYyMm = DateUtil.getDateToday("yyyymMM");
+}
+boolean downLoadYn = addressInfoService.downLodaArressInfo(workYyMm);
+
+if(downLoadYn) {
+return RepeatStatus.FINISHED;
+}
+
+DataHashMap  requestData = new DataHashMap();
+
+requestData.set("reqAddressYyMm", workYyMm);
+
+String[] codeList = {"AA", "AB", "AC", "AD"};
+
+for (ing i = 0; i < codeList.length; i++;) {
+File f = new File(BatchFileUtil.getRcvDirPath() + "rcvData" + File.separator + workYyMm + File.separator + "ADDR" + codeList[i] + "_" + workYyMm.substring(2,6) + ".txt");
+
+if(!f.exists()){
+confinue;
+} else {
+requestData.put("prssCd", codeList[i]);
+commonDao.delete("B.Address.deleteAddress", requestData);
+}
+}
+return RepeatStatus.FINISHED;
+})
+build();
