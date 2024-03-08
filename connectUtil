@@ -32,6 +32,45 @@ public static void connect(String env, String host, String userId, String pswd, 
       channelSftp = (ChannelSftp) channel;
 }
 
+public static boolean downloadSftp(String orgPath, String updPath, String fileNm) {
+      log.info("----------------------------------------------");      
+      log.info(">>>>>>>>>>>>> SERVER PATH : [{}]", orgPath);
+      log.info(">>>>>>>>>>>>> GATWAY PATH : [{}]", updPath);
+      log.info(">>>>>>>>>>>>> FILE NAME : [{}]", fileNm);
+      log.info("----------------------------------------------");
+      boolean result = true;
+
+      InputStream inputFile = null;
+      FileOutputStream outputFile = null;
+
+      try {
+          channelSftp.cd(orgPath);
+          inputFile = channelSftp.get(orgPath + fileNm);
+          outputFile = new FileOutputStream(new File(updPath + fileNm));
+          int i;
+            while ((i =  inputFile.read() != -1) {
+                  outputFile.write(i);
+            }
+      } catch (IOException e) {
+          return false;
+      } catch (SftpException e) {
+          return false;
+      } finally {
+          try {
+                if ( inputFile == null || outputFile == null) {
+                      return false;
+                }
+                        if(outputFile != null) outputFile.close();
+                        if(inputFile != null) inputFile.close();
+          } catch ( IOException e) {
+               return false;
+          }
+      }
+       return result;
+}
+
+
+
 public static boolean uploadSftp(String orgPath, String updPath, String fileNm) {
       log.info("----------------------------------------------");      
       log.info(">>>>>>>>>>>>> SERVER PATH : [{}]", orgPath);
@@ -62,6 +101,5 @@ public static boolean uploadSftp(String orgPath, String updPath, String fileNm) 
       }
        return result;
 }
-
 
       
