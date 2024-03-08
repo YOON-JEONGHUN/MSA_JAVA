@@ -1,1 +1,67 @@
+public static void connect(String env, String host, String userId, String pswd, int port) throws Exception {
+      log.info("----------------------------------------------");
+      log.info(">>>>>>>>>>>>> G/W NAME : [{}]", env);
+      log.info("----------------------------------------------");
+      CustomProperty customProperty = new CustomProperty();
 
+      int proxPort = 8325;
+      String proxyHost = customProperty.getProperty("test.batch.proxy.host");
+      if(NullUtil.isNone(env)) {
+          throw new BizException("접속확경 확인");
+      }
+      log.info("----------------------------------------------");
+      log.info("--------------- STFP 연결정보-----------------");
+      log.info("----------------------------------------------");
+      log.info(">>>>>>>>>>>>> 서버IP : [{}]", host);
+      log.info(">>>>>>>>>>>>> 사용자ID : [{}]", userId);
+      log.info(">>>>>>>>>>>>> 서버포트 : [{}]", port);
+      log.info("----------------------------------------------");
+
+      JSch jsch = new JSch();
+      session = jsch.getSession(userId, host, port);
+      if("local".equals(PropertieUtil.getEnv())) {
+            Proxy proxy = new ProxySOCKSS(proxyHost, proxyPort);
+            session.setProxy(proxy);
+      }
+      sesstion.setPassworkd(pswd);
+      java.util.Properties config = new java.util.Properties();
+      session.setConfig(config);
+      session.connect();
+      channel = session.openChannel("sftp");
+      channel.connect();
+      channelSftp = (ChannelSftp) channel;
+}
+
+public static boolean uploadSftp(String orgPath, String updPath, String fileNm) {
+      log.info("----------------------------------------------");      
+      log.info(">>>>>>>>>>>>> SERVER PATH : [{}]", orgPath);
+      log.info(">>>>>>>>>>>>> GATWAY PATH : [{}]", updPath);
+      log.info(">>>>>>>>>>>>> FILE NAME : [{}]", fileNm);
+      log.info("----------------------------------------------");
+      boolean result = true;
+      File orgFile = new File(orgPath + fileNm);
+      FileInputStream orgFile = null;
+      try {
+          orgFile = new FileInputStream(orgFile);
+          channelSftp.cd(updPath);
+          channelSftp.put(orgPath, updPath + fileNm);
+      } catch (FileNotFoundException e) {
+          return false;
+      } catch (SftpException e) {
+          return false;
+      } finally {
+          try {
+                if ( orgFile == null ) {
+                      return false;
+                } else {
+                  orgFile.close();
+                }  
+          } catch ( IOException e) {
+               return false;
+          }
+      }
+       return result;
+}
+
+
+      
