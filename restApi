@@ -1,1 +1,30 @@
+public DataHashMap readFile(File f, String codeCd, String fileName, String workDate) {
 
+try (BufferedReader bReader =  new BufferedReader(new InputStreamReader(new FileInputStream(f), "EUC-KR"))) {
+
+String readData = null;
+
+while ((readData = bReader.readLine()) != null) {
+
+readLineCnt++;
+
+byte[] b = readData.getBytes("EUC-KR");
+
+String firstChar = new String (b, 0, 2);
+
+if("AD".equals(firstChar)) {
+continue;
+} else if("AE".equals(firstChar)) {
+break;
+} else if("AF".equals(firstChar)) {
+if(b.length != 120) {
+continue;
+}
+
+String aCode = new String(b. 0, 2).trim();
+
+String bCode = new String(b. 2, 8).trim();
+
+String cCode = new String(b. 10, 14).trim();
+
+String aCode = new String(b. 24, 4).trim();
