@@ -25,3 +25,23 @@ public Job conditionalJob throws Exception {
                   .end()
                   .build();
 }
+
+@Bean
+public Step prodCdInfoStep03 throws Exception {
+    return stepBuilderFactory.get("prodCdInfoStep03")
+        .tasklet((StepContribution contribution, ChunkContext chunkContext) -> {
+                List<ProdCdInfoBatchDTO> duplicateList = dataShareBean.get("duplicateData");
+                if(NullUtil.isNone(duplicateList)) {
+                    contribution.setExitStatus(new ExitStatus("COMPLETED WITH SKIPS"));
+                } else {
+                    List<ProdCdInfoBatchDTO> newProdCdInfoList = prodCdInfoService.retrieveProdCdInfo(duplicateList);
+                    if (NullUtil.isNone(newProdCdInfoList)) {
+                         contribution.setExitStatus(new ExitStatus("COMPLETED WITH SKIPS"));
+                    }
+                    dataShareBean.putData("newProdCdInfoListData", newProdCdInfoList);
+                }
+                    return RepeatStatus.FINISHED;
+                })
+                .listener(new BaseStepLogger())
+                .build();
+}
