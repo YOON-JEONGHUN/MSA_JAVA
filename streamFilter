@@ -1,1 +1,20 @@
+List<ProdTrgtYnDTO>  prodTrgtYnList = new ArrayList<ProdTrgtYnDTO>();
 
+for(int i = 0; i < deleteKeyDTOList.size(); i++) {
+ProdTrgtYnDTO prodTrgtYnDTO = new ProdTrgtYnDTO();
+prodTrgtYnDTO.setProdId(deleteKeyDTOList.get(i).getProdId());
+prodTrgtYnList.add(prodTrgtYnDTO);
+}
+
+List<ProdTrgtYnDTO> duplicateYnList = apiService.retrieveDuplicateYnList();
+
+if(!CollectionUtils.isEmpty(duplicateYnList)) {
+deleteKeyDTOList = deleteKeyDTOList.stream()
+.filter(c -> prodTrgtYnList.stream()
+.map(ProdTrgtYnDTO::getProdId)
+.anyMatch(Predicate.isEqual(c.getProdId())))
+.collect(Collectors.toList());
+return deleteKeyDTOList;
+}
+return null;
+}
