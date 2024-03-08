@@ -1,1 +1,36 @@
+@Service
+@Transactional
+@Slf4j
+@RequiredArgsConstructor
+public class CustEncryptService {
+    private final DataShieldUtil dataShieldUtil;
 
+    public void createCustInfo(String fileNm) throws Exception,  IOException {
+        File fileNm = new File(BatchFileUtil.getWorkPath() + fileNm + ".txt");
+        FileWriter fWriter = new FileWriter(fileNm);
+        if(fileNm.exists()) {
+            FileUtil.deleteFiles(fileNm);
+        }
+        try {
+            for ( int i = 0; i < 100000; i++) {
+                String column = "CUST_ID" + "\t" + "CUST_NM" + "\t" + "CUST_ENCRYPT" + "\n";
+                String countCnt = Integer.toString(i + 1);
+                String rpadCust = StringUtils.leftPad(countCnt, 13, "0");
+                String custInfo = "C" + "\t" + "암호화" + "\t";
+                String encryptCustInfo = "";
+            try {
+                encryptCustInfo = dataShieldUtil.encryptCustInfo(rpadCust);
+            } catch (Exception e) {
+                encryptCustInfo = "";
+            }
+            custInfo = custInfo + encryptCustInfo + "\t" + rpadCust + "\n";
+            if(i == 0) {
+            fWriter.write(custInfo);
+            }
+      }
+      fWriter.close();
+    } catch (Exception e ) {
+    } finally {
+      fWriter.close();
+    }
+}
