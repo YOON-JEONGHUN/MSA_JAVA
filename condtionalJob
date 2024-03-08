@@ -1,1 +1,27 @@
+@Bean(name =  "test_testmgmt_ConditionalJob" )
+public Job conditionalJob throws Exception {
+    RequestScoptUtil.getAttribute().setUserId("12345");
 
+    Flow flow1 = new FileBuilder <Flow> ("flow1").start(prodCdInfoStep01())
+                  .on("COMPLETED WITH SKIPS")
+                  .end()
+                  .from(prodCdInfoStep01())
+                  .on("COMPLETED")
+                  .to(prodCdInfoStep02())
+                  .build();
+
+    Flow flow2 = new FileBuilder <Flow> ("flow2").start(prodCdInfoStep03())
+                  .on("COMPLETED WITH SKIPS")
+                  .end()
+                  .from(prodCdInfoStep03())
+                  .on("COMPLETED")
+                  .to(prodCdInfoStep04())
+                  .build();
+
+    return jobBuilderFactory.get("test_testmgmt_ConditionalJob")
+                  .listener(new BaseJobLogger())
+                  .start(flow1)
+                  .next(flow2)
+                  .end()
+                  .build();
+}
