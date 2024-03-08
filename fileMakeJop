@@ -1,1 +1,38 @@
+@Bean
+@JobScope
+public Step fileInfoExtraJobStep01 throws Exception {
+return stepBuilderFactory.get("fileInfoExtraJobStep01")
+    .<FileInfoExtraEntity, FileInfoExtraDTO>chunk(1000)
+    .reader(fileInfoExtraReader(null))
+    .processor(fileInfoExtraProcessor)
+    .writer(fileInfoExtraWriter(null))
+    .listener(new BaseStepLogger())
+    .listener(new BaseChunkLogger())
+    .build();
+}
+
+@Bean
+@JobScope
+public MuybatisCursorItemReader<FileInfoExtraEntity> fileInfoExtraReader(@Value("#{jobParameters[workDate]}") String workDate) {
+    Map<String, Object> parameterValues = new HashMap<>();
+    if(NullUtil.isNone(workDate))workDate = DateUtil.getDateToday("yyyyMMdd");
+    parameterValues.put("workDate",workDate);
+
+    return new MyBatisCursorItemReaderBuilder<FileInfoExtraEntity>().sqlSesstionFactory(sqlSesstionFactory)
+          .queryId("O.prodNav.selectProdInfoList")
+          .parameterValues(parameterValues)
+          .build();
+}
+
+@Bean
+@JobScope
+public FlatFileItemWriter<FileInfoExtraDTO> fileInfoExtraWriter(@Value("#{jobParameters[workDate]}") String workDate) {
+   
+    return new FlatFileItemWriterBuilder<FileInfoExtraDTO>().name("fileInfoExtraWriter")
+          .resource(new fileSystemResource(BatchFileUtil.getWorkPath() + "FILE_EXTRA_" + workDate + ".txt"))
+          .delimited()
+          .delimiter("")
+          .name(new String[] {"prodId", "custId", "custNm"} )
+          .build();
+}
 
