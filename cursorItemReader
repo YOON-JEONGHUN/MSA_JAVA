@@ -1,1 +1,21 @@
+@Bean
+@StepScope
+    public MyBatisFatchCurcorItemReader<ProdCdInfoDTO> prodCdInfoReader (
+      @Value("#[stepExcutionContext['workGrpNo']}") String workGrpNo) {
 
+      String curDate = DateUtil.getDateToday("yyyyMMdd");
+      String workDate = curDate.subString(0, 6) + "01";
+
+      Map<String, Object> parameterValues = new HashMap<>();
+      parameterValues.put("workDate", workDate);
+      parameterValues.put("workGrpNo", workGrpNo);
+
+      MyBatisFetchCursorItemReader itemReader = new MyBatisFetchCursorItemReader();
+      itemReader.setSqlSessionFactory(sqlSessionFactory);
+      itemReader.setDataSource((DataSource)BeanUtil.getBean("dataSource1");
+      itemReader.setFetchSize(50);
+      itemReader.setQueryId("O.ProdCdInfo.retrieveProdInfoList);
+      itemReader.setParameterValues(parameterValues);
+      itemReader.setRowMapper(new BeanPropertyRowMapper<>(ProdCdInfoDTO.class));
+      return itemReader;
+}
