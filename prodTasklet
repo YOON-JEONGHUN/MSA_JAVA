@@ -1,1 +1,35 @@
+@Bean
+Public Step prodCdStep() throws Exception {
+    return stepBuilderFactory.get("prodCdStep").tasklet((contribution, chunContext) -> {
+      List<ProdCdWorkBatchDTO> prodCdWorkInfo = new ArrayList<ProdCdWorkBatchDTO>();
+      String workDate - LogicalDateUtil.getLogicalDate(KeyUtil.COM_DV_B);
+      String workGrpNo = "1";
+      int workGrpTotalCnt = prodCdService.retrieveGrpCnt(workGrpNo);
+      int totalPages = (int) Math.ceil(double) workGrpTotalCnt / 500);
+      int pageNo = 0;
+      String prodId = "";
 
+      ProdCdInfoBatchDTO prodCdInfoBatchDTO = new ProdCdInfoBatchDTO();
+      prodCdInfoBatchDTO.setWorkGrpNo(workGrpNo);
+
+      do {
+          pageNo = pageNo + 1;
+          prodCdInfoBatchDTO.setProdId(prodId);
+
+          List<ProdCdInfoBatchDTO> prodCdInfoList = prodCdInfoService.retrieveProdCd(prodCdInfoBatchDTO);
+
+          if(prodCdInfoList.size() > 0) {
+                int getNo = prodCdInfoList.size() - 1;
+                prodId = prodCdInfoList.get(getNo).getProdId();
+                List<ProdCdWorkBatchDTO> prodCdWorkBatchDTOList = prodCdInfoService.retrieveProdCdInfoList(prodCdInfoList, workDate);
+                prodCdWorkInfo.addAll(prodCdWorkBatchDTOList);
+          }
+      } while (pageNo < totalPages);
+      dataShareBean.putData("prodCdInfoData", prodCdWorkInfo);
+      contribution.getStepExcution().setWriteCount(prodCdWorkInfo.size());
+      return RepeatStatus.FINISHED;
+    }).listener(new BaseStepLogger()).build();
+}
+
+                
+                
